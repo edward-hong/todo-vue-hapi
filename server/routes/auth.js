@@ -1,10 +1,10 @@
 const { signup } = require('../controllers/auth')
 
-const routes = server => {
+const routes = (server, db) => {
   server.route({
     method: 'POST',
     path: '/auth/signup',
-    handler: signup,
+    handler: signup(db),
   })
 }
 
