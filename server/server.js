@@ -1,5 +1,7 @@
 const Hapi = require('@hapi/hapi')
 
+const authRoutes = require('./routes/auth')
+
 const PORT = process.env.PORT || 5000
 
 const init = async () => {
@@ -8,13 +10,7 @@ const init = async () => {
     host: 'localhost',
   })
 
-  server.route({
-    method: 'GET',
-    path: '/api/signup',
-    handler: (request, h) => {
-      return { data: 'you hit the signup endpoint' }
-    },
-  })
+  authRoutes(server)
 
   await server.start()
   console.log(`Server running on port ${PORT}`)
