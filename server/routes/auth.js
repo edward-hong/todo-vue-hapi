@@ -1,5 +1,8 @@
-const { signup } = require('../controllers/auth')
-const { userSignupValidator } = require('../validators/auth')
+const { signup, activate } = require('../controllers/auth')
+const {
+  userSignupValidator,
+  userActivationValidator,
+} = require('../validators/auth')
 
 const routes = (server, db) => {
   server.route({
@@ -8,6 +11,15 @@ const routes = (server, db) => {
     handler: signup(db),
     options: {
       validate: userSignupValidator,
+    },
+  })
+
+  server.route({
+    method: 'POST',
+    path: '/auth/activate',
+    handler: activate(db),
+    options: {
+      validate: userActivationValidator,
     },
   })
 }

@@ -1,6 +1,7 @@
 const Boom = require('@hapi/boom')
 const sgMail = require('@sendgrid/mail')
 const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
 
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
@@ -42,5 +43,38 @@ exports.signup = db => async (request, h) => {
     }
   } catch (err) {
     return Boom.badImplementation()
+  }
+}
+
+exports.activate = db => async (request, h) => {
+  const { token } = request.payload
+
+  if (token) {
+    try {
+      jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION)
+
+      const { name, email, password } = jwt.decode(token)
+
+      const salt = Math.round(new Date().valueOf() * Math.random()) + ''
+
+      const hashedPassword = crypto
+        .createHmac('sha1', salt)
+        .update(password)
+        .digest('hex')
+
+      const newUser = {
+        _id: `auth:${email}`,
+        name,
+        email,
+        salt,
+        hashedPassword,
+      }
+
+      await db.insert(newUser)
+
+      return { message: 'Signup success. Please signin' }
+    } catch (err) {
+      return Boom.badImplementation()
+    }
   }
 }
