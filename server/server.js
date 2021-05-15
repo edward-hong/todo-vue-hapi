@@ -19,9 +19,14 @@ const init = async () => {
   })
 
   const url = process.env.CLOUDANT_URL
-  const username = process.env.CLOUDANT_USERNME
+  const account = process.env.CLOUDANT_ACCOUNT
+  const iamApiKey = process.env.CLOUDANT_IAM_API_KEY
 
-  const cloudant = Cloudant({ url, username })
+  const cloudant = Cloudant({
+    url,
+    account,
+    plugins: { iamauth: { iamApiKey } },
+  })
   const db = cloudant.db.use('todo-vue-hapi')
 
   authRoutes(server, db)
