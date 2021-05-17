@@ -46,6 +46,43 @@ exports.signup = db => async (request, h) => {
   }
 }
 
+exports.signin = db => async (request, h) => {
+  const { email, password } = request.payload
+
+  try {
+    const userList = await db.list()
+
+    const foundUser = userList.rows.find(user => user.id === `auth:${email}`)
+
+    if (!foundUser) {
+      return Boom.badRequest(
+        'User with that email does not exist. Please signup'
+      )
+    }
+
+    const user = await db.get(`auth:${email}`)
+
+    const hashedPassword = crypto
+      .createHmac('sha1', user.salt)
+      .update(password)
+      .digest('hex')
+
+    if (hashedPassword !== user.hashedPassword) {
+      return Boom.badRequest('Email and password do not match')
+    } else {
+      const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+        expiresIn: '7d',
+      })
+      return {
+        token,
+        user: { name: user.name, email: user.email },
+      }
+    }
+  } catch (err) {
+    return Boom.badImplementation()
+  }
+}
+
 exports.activate = db => async (request, h) => {
   const { token } = request.payload
 
