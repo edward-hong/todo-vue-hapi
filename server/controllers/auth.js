@@ -161,3 +161,34 @@ exports.forgot = db => async (request, h) => {
     return Boom.badImplementation()
   }
 }
+
+exports.reset = db => async (request, h) => {
+  const { resetPasswordLink, newPassword } = request.payload
+
+  if (resetPasswordLink !== 'default') {
+    try {
+      const decoded = jwt.verify(
+        resetPasswordLink,
+        process.env.JWT_RESET_PASSWORD
+      )
+
+      const user = await db.get(decoded._id)
+
+      const hashedPassword = crypto
+        .createHmac('sha1', user.salt)
+        .update(newPassword)
+        .digest('hex')
+
+      user.hashedPassword = hashedPassword
+      user.resetPasswordLink = 'default'
+
+      await db.insert(user)
+
+      return {
+        message: 'Great! Now you can login with your new password',
+      }
+    } catch (err) {
+      return Boom.badImplementation()
+    }
+  }
+}

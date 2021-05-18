@@ -26,3 +26,10 @@ exports.userForgotValidator = {
     email: Joi.string().email({ minDomainSegments: 2 }).required(),
   }),
 }
+
+exports.userResetValidator = {
+  payload: Joi.object({
+    resetPasswordLink: Joi.string().required(),
+    newPassword: Joi.string().min(6).required(),
+  }),
+}

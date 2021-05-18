@@ -1,9 +1,16 @@
-const { signup, signin, activate, forgot } = require('../controllers/auth')
+const {
+  signup,
+  signin,
+  activate,
+  forgot,
+  reset,
+} = require('../controllers/auth')
 const {
   userSignupValidator,
   userSigninValidator,
   userActivationValidator,
   userForgotValidator,
+  userResetValidator,
 } = require('../validators/auth')
 
 const routes = (server, db) => {
@@ -40,6 +47,15 @@ const routes = (server, db) => {
     handler: forgot(db),
     options: {
       validate: userForgotValidator,
+    },
+  })
+
+  server.route({
+    method: 'PUT',
+    path: '/auth/reset',
+    handler: reset(db),
+    options: {
+      validate: userResetValidator,
     },
   })
 }
