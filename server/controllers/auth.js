@@ -105,6 +105,7 @@ exports.activate = db => async (request, h) => {
         email,
         salt,
         hashedPassword,
+        resetPasswordLink: 'default',
       }
 
       await db.insert(newUser)
@@ -113,5 +114,50 @@ exports.activate = db => async (request, h) => {
     } catch (err) {
       return Boom.badImplementation()
     }
+  }
+}
+
+exports.forgot = db => async (request, h) => {
+  const { email } = request.payload
+
+  try {
+    const userList = await db.list()
+
+    const foundUser = userList.rows.find(user => user.id === `auth:${email}`)
+
+    if (!foundUser) {
+      return Boom.badRequest('User with that email does not exist.')
+    }
+
+    const user = await db.get(`auth:${email}`)
+
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_RESET_PASSWORD, {
+      expiresIn: '10m',
+    })
+
+    const emailData = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: 'Password Reset Link',
+      html: `
+        <h1>Please use the following link to reset your password</h1>
+        <p>${process.env.CLIENT_URL}/reset/${token}</p>
+        <hr />
+        <p>This email may contain sensitive information</p>
+        <p>${process.env.CLIENT_URL}</p>
+      `,
+    }
+
+    user.resetPasswordLink = token
+
+    await db.insert(user)
+
+    await sgMail.send(emailData)
+
+    return {
+      message: `Email has been sent to ${email}. Follow the instructions to reset your password.`,
+    }
+  } catch (err) {
+    return Boom.badImplementation()
   }
 }

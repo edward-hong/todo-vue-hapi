@@ -20,3 +20,9 @@ exports.userSigninValidator = {
     password: Joi.string().min(6).required(),
   }),
 }
+
+exports.userForgotValidator = {
+  payload: Joi.object({
+    email: Joi.string().email({ minDomainSegments: 2 }).required(),
+  }),
+}
