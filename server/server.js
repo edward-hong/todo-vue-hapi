@@ -4,6 +4,7 @@ const Hapi = require('@hapi/hapi')
 const Cloudant = require('@cloudant/cloudant')
 
 const authRoutes = require('./routes/auth')
+const todoRoutes = require('./routes/todo')
 
 const PORT = process.env.PORT || 5000
 
@@ -30,6 +31,7 @@ const init = async () => {
   const db = cloudant.db.use('todo-vue-hapi')
 
   authRoutes(server, db)
+  todoRoutes(server, db)
 
   await server.start()
   console.log(`Server running on port ${PORT}`)
