@@ -3,9 +3,15 @@ const Boom = require('@hapi/boom')
 exports.list = db => async (request, h) => {
   const { email } = request.query
 
-  const response = await db.partitionedList(email, { include_docs: true })
+  const response = await db.postAllDocs({
+    db: 'todo-vue-hapi',
+    includeDocs: true,
+    startKey: email,
+  })
 
-  return response.rows.map(({ doc }) => doc)
+  return response.result.rows
+    .map(({ doc }) => doc)
+    .filter(({ _id }) => _id.split(':')[0] !== 'auth')
 }
 
 exports.add = db => async (request, h) => {
@@ -19,7 +25,10 @@ exports.add = db => async (request, h) => {
       completed: false,
     }
 
-    await db.insert(newTodo)
+    await db.postDocument({
+      db: 'todo-vue-hapi',
+      document: newTodo,
+    })
 
     return {
       todo: newTodo,
@@ -34,9 +43,16 @@ exports.remove = db => async (request, h) => {
   const { email, todo } = request.payload
 
   try {
-    const result = await db.get(`${email}:${todo}`)
+    const response = await db.getDocument({
+      db: 'todo-vue-hapi',
+      docId: `${email}:${todo}`,
+    })
 
-    await db.destroy(`${email}:${todo}`, result._rev)
+    await db.deleteDocument({
+      db: 'todo-vue-hapi',
+      docId: `${email}:${todo}`,
+      rev: response.result._rev,
+    })
 
     return {
       messaage: 'Todo removed successfully',
@@ -50,19 +66,29 @@ exports.edit = db => async (request, h) => {
   const { email, todo, editedTodo } = request.payload
 
   try {
-    const result = await db.get(`${email}:${todo}`)
+    const response = await db.getDocument({
+      db: 'todo-vue-hapi',
+      docId: `${email}:${todo}`,
+    })
 
-    result._id = `${email}:${editedTodo}`
-    result.todo = editedTodo
+    response.result._id = `${email}:${editedTodo}`
+    response.result.todo = editedTodo
 
-    await db.destroy(`${email}:${todo}`, result._rev)
+    await db.deleteDocument({
+      db: 'todo-vue-hapi',
+      docId: `${email}:${todo}`,
+      rev: response.result._rev,
+    })
 
-    delete result._rev
+    delete response.result._rev
 
-    await db.insert(result)
+    await db.postDocument({
+      db: 'todo-vue-hapi',
+      document: response.result,
+    })
 
     return {
-      editedTodo: result,
+      editedTodo: response.result,
       message: 'Todo edited successfully',
     }
   } catch (err) {
@@ -74,14 +100,20 @@ exports.complete = db => async (request, h) => {
   const { email, todo } = request.payload
 
   try {
-    const result = await db.get(`${email}:${todo}`)
+    const response = await db.getDocument({
+      db: 'todo-vue-hapi',
+      docId: `${email}:${todo}`,
+    })
 
-    result.completed = true
+    response.result.completed = true
 
-    await db.insert(result)
+    await db.postDocument({
+      db: 'todo-vue-hapi',
+      document: response.result,
+    })
 
     return {
-      completedTodo: result,
+      completedTodo: response.result,
       message: 'Todo complted successfully',
     }
   } catch (err) {
