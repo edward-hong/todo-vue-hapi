@@ -1,7 +1,18 @@
 require('dotenv').config()
 
 const Hapi = require('@hapi/hapi')
-const Cloudant = require('@cloudant/cloudant')
+const { CloudantV1 } = require('@ibm-cloud/cloudant')
+const { IamAuthenticator } = require('ibm-cloud-sdk-core')
+
+const authenticator = new IamAuthenticator({
+  apikey: process.env.CLOUDANT_IAM_API_KEY,
+})
+
+const db = new CloudantV1({
+  authenticator,
+})
+
+db.setServiceUrl(process.env.CLOUDANT_URL)
 
 const authRoutes = require('./routes/auth')
 const todoRoutes = require('./routes/todo')
@@ -18,17 +29,6 @@ const init = async () => {
       },
     },
   })
-
-  const url = process.env.CLOUDANT_URL
-  const account = process.env.CLOUDANT_ACCOUNT
-  const iamApiKey = process.env.CLOUDANT_IAM_API_KEY
-
-  const cloudant = Cloudant({
-    url,
-    account,
-    plugins: { iamauth: { iamApiKey } },
-  })
-  const db = cloudant.db.use('todo-vue-hapi')
 
   authRoutes(server, db)
   todoRoutes(server, db)

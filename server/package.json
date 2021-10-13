@@ -20,11 +20,12 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@cloudant/cloudant": "^4.3.1",
 		"@hapi/boom": "^9.1.2",
 		"@hapi/hapi": "^20.0.3",
+		"@ibm-cloud/cloudant": "^0.0.20",
 		"@sendgrid/mail": "^7.4.4",
 		"dotenv": "^8.2.0",
+		"ibm-cloud-sdk-core": "^2.14.4",
 		"joi": "^17.4.0",
 		"jsonwebtoken": "^8.5.1"
 	},

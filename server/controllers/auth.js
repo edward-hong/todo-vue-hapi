@@ -9,9 +9,15 @@ exports.signup = db => async (request, h) => {
   const { name, email, password } = request.payload
 
   try {
-    const userList = await db.list()
+    const userList = await db.postAllDocs({
+      db: 'todo-vue-hapi',
+      includeDocs: true,
+      startKey: 'auth',
+    })
 
-    const foundUser = userList.rows.find(user => user.id === `auth:${email}`)
+    const foundUser = userList.result.rows.find(
+      user => user.id === `auth:${email}`
+    )
 
     if (foundUser) {
       return Boom.badRequest('Email is taken')
@@ -42,6 +48,7 @@ exports.signup = db => async (request, h) => {
       message: `Email has been sent to ${email}. Follow the instructions to activate your account.`,
     }
   } catch (err) {
+    console.error(err)
     return Boom.badImplementation()
   }
 }
@@ -50,9 +57,15 @@ exports.signin = db => async (request, h) => {
   const { email, password } = request.payload
 
   try {
-    const userList = await db.list()
+    const userList = await db.postAllDocs({
+      db: 'todo-vue-hapi',
+      includeDocs: true,
+      startKey: 'auth',
+    })
 
-    const foundUser = userList.rows.find(user => user.id === `auth:${email}`)
+    const foundUser = userList.result.rows.find(
+      user => user.id === `auth:${email}`
+    )
 
     if (!foundUser) {
       return Boom.badRequest(
@@ -60,22 +73,29 @@ exports.signin = db => async (request, h) => {
       )
     }
 
-    const user = await db.get(`auth:${email}`)
+    const user = await db.getDocument({
+      db: 'todo-vue-hapi',
+      docId: `auth:${email}`,
+    })
 
     const hashedPassword = crypto
-      .createHmac('sha1', user.salt)
+      .createHmac('sha1', user.result.salt)
       .update(password)
       .digest('hex')
 
-    if (hashedPassword !== user.hashedPassword) {
+    if (hashedPassword !== user.result.hashedPassword) {
       return Boom.badRequest('Email and password do not match')
     } else {
-      const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-        expiresIn: '7d',
-      })
+      const token = jwt.sign(
+        { email: user.result.email },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: '7d',
+        }
+      )
       return {
         token,
-        user: { name: user.name, email: user.email },
+        user: { name: user.result.name, email: user.result.email },
       }
     }
   } catch (err) {
@@ -108,10 +128,14 @@ exports.activate = db => async (request, h) => {
         resetPasswordLink: 'default',
       }
 
-      await db.insert(newUser)
+      await db.postDocument({
+        db: 'todo-vue-hapi',
+        document: newUser,
+      })
 
       return { message: 'Signup success. Please signin' }
     } catch (err) {
+      console.error(err)
       return Boom.badImplementation()
     }
   }
@@ -121,19 +145,32 @@ exports.forgot = db => async (request, h) => {
   const { email } = request.payload
 
   try {
-    const userList = await db.list()
+    const userList = await db.postAllDocs({
+      db: 'todo-vue-hapi',
+      includeDocs: true,
+      startKey: 'auth',
+    })
 
-    const foundUser = userList.rows.find(user => user.id === `auth:${email}`)
+    const foundUser = userList.result.rows.find(
+      user => user.id === `auth:${email}`
+    )
 
     if (!foundUser) {
       return Boom.badRequest('User with that email does not exist.')
     }
 
-    const user = await db.get(`auth:${email}`)
-
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_RESET_PASSWORD, {
-      expiresIn: '10m',
+    const user = await db.getDocument({
+      db: 'todo-vue-hapi',
+      docId: `auth:${email}`,
     })
+
+    const token = jwt.sign(
+      { _id: user.result._id },
+      process.env.JWT_RESET_PASSWORD,
+      {
+        expiresIn: '10m',
+      }
+    )
 
     const emailData = {
       from: process.env.EMAIL_FROM,
@@ -148,9 +185,14 @@ exports.forgot = db => async (request, h) => {
       `,
     }
 
-    user.resetPasswordLink = token
+    user.result.resetPasswordLink = token
 
-    await db.insert(user)
+    await db.putDocument({
+      db: 'todo-vue-hapi',
+      docId: user.result._id,
+      document: user.result,
+      rev: user.result._rev,
+    })
 
     await sgMail.send(emailData)
 
@@ -158,6 +200,7 @@ exports.forgot = db => async (request, h) => {
       message: `Email has been sent to ${email}. Follow the instructions to reset your password.`,
     }
   } catch (err) {
+    console.error(err)
     return Boom.badImplementation()
   }
 }
@@ -172,22 +215,31 @@ exports.reset = db => async (request, h) => {
         process.env.JWT_RESET_PASSWORD
       )
 
-      const user = await db.get(decoded._id)
+      const user = await db.getDocument({
+        db: 'todo-vue-hapi',
+        docId: decoded._id,
+      })
 
       const hashedPassword = crypto
-        .createHmac('sha1', user.salt)
+        .createHmac('sha1', user.result.salt)
         .update(newPassword)
         .digest('hex')
 
-      user.hashedPassword = hashedPassword
-      user.resetPasswordLink = 'default'
+      user.result.hashedPassword = hashedPassword
+      user.result.resetPasswordLink = 'default'
 
-      await db.insert(user)
+      await db.putDocument({
+        db: 'todo-vue-hapi',
+        docId: user.result._id,
+        document: user.result,
+        rev: user.result._rev,
+      })
 
       return {
         message: 'Great! Now you can login with your new password',
       }
     } catch (err) {
+      console.error(err)
       return Boom.badImplementation()
     }
   }
