@@ -10,4 +10,4 @@ The Todo List app is built with the intent of demonstrating proficiency with the
 - Vue.js
 - Hapi.js
 - Node.js
-- Tailwind CSS
+- Element+ CSS
