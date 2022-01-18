@@ -4,5 +4,6 @@ import 'element-plus/dist/index.css'
 
 import App from './App.vue'
 import router from './routes'
+import './global.css'
 
 createApp(App).use(ElementPlus).use(router).mount('#app')
