@@ -6,3 +6,4 @@ const BASE_URL = isDev
 
 export const SIGNUP_URL = `${BASE_URL}/auth/signup`
 export const SIGNIN_URL = `${BASE_URL}/auth/signin`
+export const ACTIVATE_URL = `${BASE_URL}/auth/activate`
