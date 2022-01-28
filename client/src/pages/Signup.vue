@@ -1,5 +1,19 @@
 <template>
   <div>
+    <el-alert
+      :model="form"
+      v-if="form.success"
+      :title="form.successText"
+      type="success"
+      @close="turnOff('success')"
+    ></el-alert>
+    <el-alert
+      :model="form"
+      v-if="form.error"
+      :title="form.errorText"
+      type="error"
+      @close="turnOff('error')"
+    ></el-alert>
     <h1 class="heading">Signup</h1>
     <el-form class="form" ref="formRef" :model="form" label-width="80px">
       <el-form-item :required="true" label="Name">
@@ -37,15 +51,45 @@
 
 <script setup>
   import { reactive } from 'vue'
+  import axios from 'axios'
 
-  // do not use same name with ref
+  import router from '../routes'
+  import { isAuth } from '../utils/helpers'
+  import { SIGNUP_URL } from '../constants'
+
+  if (isAuth()) {
+    router.push('/')
+  }
+
   const form = reactive({
     name: '',
     email: '',
     password: '',
+    success: false,
+    successText: '',
+    error: false,
+    errorText: '',
   })
 
-  const onSubmit = () => {
-    console.log('submit!')
+  const turnOff = property => {
+    form[property] = false
+  }
+
+  const onSubmit = async () => {
+    try {
+      const resp = await axios({
+        method: 'POST',
+        url: SIGNUP_URL,
+        data: { name: form.name, email: form.email, password: form.password },
+      })
+      form.name = ''
+      form.email = ''
+      form.password = ''
+      form.success = true
+      form.successText = resp.data.message
+    } catch (err) {
+      form.error = true
+      form.errorText = err.response.data.error
+    }
   }
 </script>
