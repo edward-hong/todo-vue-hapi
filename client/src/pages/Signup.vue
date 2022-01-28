@@ -89,7 +89,7 @@
       form.successText = resp.data.message
     } catch (err) {
       form.error = true
-      form.errorText = err.response.data.error
+      form.errorText = err.response.data.messages
     }
   }
 </script>

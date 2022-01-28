@@ -5,3 +5,4 @@ const BASE_URL = isDev
   : 'https://todo-vue-hapi.herokuapp.com'
 
 export const SIGNUP_URL = `${BASE_URL}/auth/signup`
+export const SIGNIN_URL = `${BASE_URL}/auth/signin`
