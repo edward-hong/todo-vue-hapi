@@ -17,6 +17,9 @@
   .brand {
     font-size: 1.2rem;
   }
+  .el-menu--horizontal > .el-menu-item {
+    color: var(--el-color-primary);
+  }
   .el-menu > .el-menu-item.nav-item {
     margin-left: auto;
   }

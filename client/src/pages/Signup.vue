@@ -37,7 +37,7 @@
     text-align: center;
     margin-top: 2rem;
     font-size: 3rem;
-    color: #409eff;
+    color: var(--el-color-primary);
   }
   .form {
     text-align: center;

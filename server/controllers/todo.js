@@ -25,14 +25,16 @@ exports.add = db => async (request, h) => {
       completed: false,
     }
 
-    await db.postDocument({
+    const resp = await db.postDocument({
       db: 'todo-vue-hapi',
       document: newTodo,
     })
 
+    newTodo._rev = resp.result.rev
+
     return {
       todo: newTodo,
-      messaage: 'Todo added successfully',
+      message: 'Todo added successfully',
     }
   } catch (err) {
     return Boom.badImplementation()
@@ -55,7 +57,7 @@ exports.remove = db => async (request, h) => {
     })
 
     return {
-      messaage: 'Todo removed successfully',
+      message: 'Todo removed successfully',
     }
   } catch (err) {
     return Boom.badImplementation()
@@ -114,7 +116,7 @@ exports.complete = db => async (request, h) => {
 
     return {
       completedTodo: response.result,
-      message: 'Todo complted successfully',
+      message: 'Todo completed successfully',
     }
   } catch (err) {
     console.log(err)
