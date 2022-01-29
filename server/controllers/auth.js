@@ -178,7 +178,7 @@ exports.forgot = db => async (request, h) => {
       subject: 'Password Reset Link',
       html: `
         <h1>Please use the following link to reset your password</h1>
-        <p>${process.env.CLIENT_URL}/reset/${token}</p>
+        <p>${process.env.CLIENT_URL}/reset/${token}/</p>
         <hr />
         <p>This email may contain sensitive information</p>
         <p>${process.env.CLIENT_URL}</p>

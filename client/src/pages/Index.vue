@@ -137,6 +137,8 @@
   import axios from 'axios'
   import { Plus, Check, Edit, Delete, Close } from '@element-plus/icons-vue'
 
+  import router from '../routes'
+  import { isAuth } from '../utils/helpers'
   import {
     TODOS_URL,
     ADD_TODO_URL,
@@ -145,7 +147,7 @@
     DELETE_TODO_URL,
   } from '../constants'
 
-  const userEmail = JSON.parse(localStorage.getItem('user')).email
+  const userEmail = JSON.parse(localStorage.getItem('user'))?.email
 
   export default {
     data() {
@@ -295,6 +297,11 @@
         }
         return false
       },
+    },
+    beforeCreate() {
+      if (!isAuth()) {
+        router.push('/signin')
+      }
     },
     async beforeMount() {
       const { data } = await axios.get(TODOS_URL)

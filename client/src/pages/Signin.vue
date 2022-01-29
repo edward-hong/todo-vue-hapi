@@ -26,6 +26,10 @@
         <el-button type="primary" @click="onSubmit">Signin</el-button>
       </el-form-item>
     </el-form>
+    <p class="forgot">
+      Forgot Password? Click
+      <router-link class="link" to="/forgot">here</router-link>
+    </p>
   </div>
 </template>
 
@@ -38,11 +42,22 @@
   }
   .form {
     text-align: center;
-    margin: 2rem auto;
+    margin: 2rem auto 1rem;
     max-width: 600px;
   }
   .el-form-item__content {
     justify-content: center;
+  }
+  .forgot {
+    color: var(--el-text-color-regular);
+    text-align: center;
+  }
+  .link {
+    color: var(--el-color-primary);
+    text-decoration: none;
+  }
+  .link:hover {
+    text-decoration: underline;
   }
 </style>
 
