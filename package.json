@@ -1,0 +1,36 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "engines": {
+    "node": "14.17.0",
+    "npm": "7.15.0"
+  },
+  "scripts": {
+    "start": "NODE_ENV=production node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edward-hong/todo-vue-hapi.git"
+  },
+  "homepage": "https://github.com/edward-hong/todo-vue-hapi#readme",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/boom": "^9.1.2",
+    "@hapi/hapi": "^20.0.3",
+    "@hapi/inert": "^6.0.5",
+    "@ibm-cloud/cloudant": "^0.0.20",
+    "@sendgrid/mail": "^7.4.4",
+    "dotenv": "^8.2.0",
+    "ibm-cloud-sdk-core": "^2.14.4",
+    "joi": "^17.4.0",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}

@@ -1,6 +1,8 @@
 require('dotenv').config()
 
+const path = require('path')
 const Hapi = require('@hapi/hapi')
+const inert = require('@hapi/inert')
 const { CloudantV1 } = require('@ibm-cloud/cloudant')
 const { IamAuthenticator } = require('ibm-cloud-sdk-core')
 
@@ -27,15 +29,36 @@ const init = async () => {
       cors: {
         origin: ['*'],
       },
+      files: {
+        relativeTo: path.join(__dirname, '..', 'client', 'dist'),
+      },
     },
   })
 
+  await server.register(inert)
+
   server.route({
     method: 'GET',
-    path: '/',
-    handler: () => ({
-      test: 'working',
-    }),
+    path: '/{any*}',
+    handler: {
+      directory: {
+        path: '.',
+        redirectToSlash: true,
+        lookupCompressed: true,
+      },
+    },
+  })
+
+  server.ext('onPreResponse', (request, h) => {
+    const response = request.response
+
+    if (!response.isBoom) {
+      return h.continue
+    }
+
+    if (response.output.statusCode === 404) {
+      return h.file('index.html')
+    }
   })
 
   authRoutes(server, db)
